@@ -82,7 +82,7 @@ class Client:
 
     def _handle_video_receive(self):
         self._rtp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._rtp_socket.bind((self.DEFAULT_LOCAL_HOST, self.rtp_port))
+        self._rtp_socket.bind((self.remote_host_address, self.rtp_port))
         self._rtp_socket.settimeout(self.RTP_SOFT_TIMEOUT / 1000.)
         while True:
             if not self.is_receiving_rtp:
