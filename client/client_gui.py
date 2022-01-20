@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout
 from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 from PIL.ImageQt import ImageQt
 
 from client.client import Client
@@ -20,14 +20,22 @@ class ClientWindow(QMainWindow):
             parent=None):
         super(ClientWindow, self).__init__(parent)
         self.video_player = QLabel()
+
         self.setup_button = QPushButton()
         self.play_button = QPushButton()
         self.pause_button = QPushButton()
         self.tear_button = QPushButton()
+        self.video1_button = QPushButton()
+        self.video2_button = QPushButton()
+        self.video3_button = QPushButton()
+        self.livestream_button = QPushButton()
+        
+        self.select = QLabel()
+        self.control = QLabel()
+
         self.error_label = QLabel()
 
-        self._media_client = Client(
-            file_name, host_address, host_port, rtp_port)
+        self._media_client = Client(file_name, host_address, host_port, rtp_port)
         self._update_image_signal.connect(self.update_image)
         self._update_image_timer = QTimer()
         self._update_image_timer.timeout.connect(
@@ -37,6 +45,7 @@ class ClientWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("Client")
+        self.setStyleSheet("background-color: rgb(255, 244, 212)")
 
         self.setup_button.setEnabled(True)
         self.setup_button.setText('Setup')
@@ -54,6 +63,23 @@ class ClientWindow(QMainWindow):
         self.tear_button.setText('Teardown')
         self.tear_button.clicked.connect(self.handle_teardown)
 
+        self.video1_button.setEnabled(False)
+        self.video1_button.setText('Video1')
+        self.video1_button.clicked.connect(self.handle_select("video1"))
+
+        self.video2_button.setEnabled(False)
+        self.video2_button.setText('Video2')
+        self.video2_button.clicked.connect(self.handle_select("video2"))
+
+        self.video3_button.setEnabled(False)
+        self.video3_button.setText('Video3')
+        self.video3_button.clicked.connect(self.handle_select("video3"))
+
+        self.livestream_button.setEnabled(False)
+        self.livestream_button.setText('LiveStream')
+        self.livestream_button.clicked.connect(self.handle_select())        
+
+
         self.error_label.setSizePolicy(
             QSizePolicy.Preferred,
             QSizePolicy.Maximum)
@@ -61,16 +87,39 @@ class ClientWindow(QMainWindow):
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
 
-        control_layout = QHBoxLayout()
+        font =QFont()
+        font.setPointSize(15)
+        font.setBold(True)
+        font.setWeight(75)
+        self.control.setFont(font)     
+        self.control.setAlignment(Qt.AlignCenter)
+        self.control.setText("Control")
+        self.select.setFont(font)     
+        self.select.setAlignment(Qt.AlignCenter)
+        self.select.setText("Select")
+
+        control_layout = QVBoxLayout()
         control_layout.setContentsMargins(0, 0, 0, 0)
+        control_layout.addWidget(self.control)
         control_layout.addWidget(self.setup_button)
         control_layout.addWidget(self.play_button)
         control_layout.addWidget(self.pause_button)
         control_layout.addWidget(self.tear_button)
 
-        layout = QVBoxLayout()
+        select_layout = QVBoxLayout()
+        select_layout.addWidget(self.select)
+        select_layout.addWidget(self.video1_button)
+        select_layout.addWidget(self.video2_button)
+        select_layout.addWidget(self.video3_button)
+        select_layout.addWidget(self.livestream_button)
+
+        userInput_layout = QVBoxLayout()
+        userInput_layout.addLayout(control_layout)
+        userInput_layout.addLayout(select_layout)
+
+        layout = QHBoxLayout()
         layout.addWidget(self.video_player)
-        layout.addLayout(control_layout)
+        layout.addLayout(userInput_layout)
         layout.addWidget(self.error_label)
 
         central_widget.setLayout(layout)
@@ -89,24 +138,59 @@ class ClientWindow(QMainWindow):
         self.setup_button.setEnabled(False)
         self.play_button.setEnabled(True)
         self.tear_button.setEnabled(True)
+        self.video1_button.setEnabled(True)
+        self.video2_button.setEnabled(True)
+        self.video3_button.setEnabled(True)
+        self.livestream_button.setEnabled(True)
         self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
 
     def handle_play(self):
         self._media_client.send_play_request()
         self.play_button.setEnabled(False)
         self.pause_button.setEnabled(True)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
 
     def handle_pause(self):
         self._media_client.send_pause_request()
         self.pause_button.setEnabled(False)
         self.play_button.setEnabled(True)
+        self.video1_button.setEnabled(True)
+        self.video2_button.setEnabled(True)
+        self.video3_button.setEnabled(True)
+        self.livestream_button.setEnabled(True)     
 
     def handle_teardown(self):
         self._media_client.send_teardown_request()
         self.setup_button.setEnabled(True)
         self.play_button.setEnabled(False)
         self.pause_button.setEnabled(False)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
         exit(0)
+    
+    def handle_select(self, video: str or None):
+        #First, Teardown
+        self._media_client.send_teardown_request()
+        #Then, new setup
+        self._media_client.establish_rtsp_connection()
+        self._media_client.send_setup_request()
+        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        #New client? 
+        self._media_client = Client(video, self.host_address, self.host_port, self.rtp_port)
+        #UI Change
+        self.play_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
+    
+
 
     def handle_error(self):
         self.play_button.setEnabled(False)

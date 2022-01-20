@@ -13,7 +13,7 @@ class Server:
     SESSION_ID = '123456'
 
     # DEFAULT_HOST = '127.0.0.1'
-    DEFAULT_HOST = '192.168.223.169'
+    DEFAULT_HOST = '192.168.0.67'
     DEFAULT_CHUNK_SIZE = 4096
 
     # for allowing simulated non-blocking operations
@@ -34,6 +34,7 @@ class Server:
         self._rtp_socket: Union[None, socket.socket] = None
         self._client_address: (str, int) = None
         self.server_state: int = self.STATE.INIT
+        self.live = True
 
         self.rtsp_port = rtsp_port
 
@@ -150,11 +151,13 @@ class Server:
             if self.server_state != self.STATE.PLAYING:
                 sleep(0.5)  # diminish cpu hogging
                 continue
-            # if self._video_stream.current_frame_number >= VideoStream.VIDEO_LENGTH-1:  # frames are 0-indexed
-            #     print('Reached end of file.')
-            #     self.server_state = self.STATE.FINISHED
-            #     return
+            if (not self.live):
+                if self._video_stream.current_frame_number >= VideoStream.VIDEO_LENGTH-1:  # frames are 0-indexed
+                    print('Reached end of file.')
+                    self.server_state = self.STATE.FINISHED
+                    return
             frame = self._video_stream.get_next_frame()
+
 
             # 目前第幾個frame
             frame_number = self._video_stream.current_frame_number
