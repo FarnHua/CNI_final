@@ -24,12 +24,7 @@ class Client:
     # it's the last chunk for current frame (end of frame)
     PACKET_HEADER_LENGTH = 5
 
-    def __init__(
-            self,
-            file_path: str,
-            remote_host_address: str,
-            remote_host_port: int,
-            rtp_port: int):
+    def __init__( self, file_path: str,remote_host_address: str,remote_host_port: int, rtp_port: int):
         self._rtsp_connection: Union[None, socket.socket] = None
         self._rtp_socket: Union[None, socket.socket] = None
         self._rtp_receive_thread: Union[None, Thread] = None
@@ -63,7 +58,7 @@ class Client:
 
     def _recv_rtp_packet(self, size=DEFAULT_CHUNK_SIZE) -> RTPPacket:
         recv = bytes()
-        print('Waiting RTP packet...')
+        # print('Waiting RTP packet...')
         while True:
             try:
                 recv += self._rtp_socket.recv(size)
@@ -95,10 +90,10 @@ class Client:
 
     def establish_rtsp_connection(self):
         if self.is_rtsp_connected:
-            print('RTSP is already connected.')
+            # print('RTSP is already connected.')
             return
-        print(
-            f"Connecting to {self.remote_host_address}:{self.remote_host_port}...")
+        # print(
+            # f"Connecting to {self.remote_host_address}:{self.remote_host_port}...")
         self._rtsp_connection = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM)
         self._rtsp_connection.connect(
@@ -108,7 +103,7 @@ class Client:
 
     def close_rtsp_connection(self):
         if not self.is_rtsp_connected:
-            print('RTSP is not connected.')
+            # print('RTSP is not connected.')
             return
         self._rtsp_connection.close()
         self.is_rtsp_connected = False
@@ -117,14 +112,8 @@ class Client:
         if not self.is_rtsp_connected:
             raise Exception(
                 'rtsp connection not established. run `setup_rtsp_connection()`')
-        request = RTSPPacket(
-            request_type,
-            self.file_path,
-            self._current_sequence_number,
-            self.rtp_port,
-            self.session_id
-        ).to_request()
-        print(f"Sending request: {repr(request)}")
+        request = RTSPPacket(request_type,self.file_path, self._current_sequence_number, self.rtp_port,self.session_id).to_request()
+        # print(f"Sending request: {repr(request)}")
         self._rtsp_connection.send(request)
         self._current_sequence_number += 1
         return self._get_response()

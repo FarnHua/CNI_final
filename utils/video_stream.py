@@ -12,7 +12,8 @@ class VideoStream:
 
     def __init__(self, file_path: str or None = None):
         # for simplicity, mjpeg is assumed to be on working directory
-        if (file_path):
+        print(file_path)
+        if (file_path != "livestream"):
             self._stream = open(file_path, 'rb')
             self.live = False
         else:

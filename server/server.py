@@ -12,8 +12,8 @@ class Server:
     FRAME_PERIOD = 1000//VideoStream.DEFAULT_FPS  # in milliseconds
     SESSION_ID = '123456'
 
-    # DEFAULT_HOST = '127.0.0.1'
-    DEFAULT_HOST = '192.168.0.67'
+    DEFAULT_HOST = '127.0.0.1'
+    #DEFAULT_HOST = '192.168.0.229'
     DEFAULT_CHUNK_SIZE = 4096
 
     # for allowing simulated non-blocking operations
@@ -27,7 +27,7 @@ class Server:
         FINISHED = 3
         TEARDOWN = 4
 
-    def __init__(self, rtsp_port: int):
+    def __init__(self, host,rtsp_port: int):
         self._video_stream: Union[None, VideoStream] = None
         self._rtp_send_thread: Union[None, Thread] = None
         self._rtsp_connection: Union[None, socket.socket] = None
@@ -35,6 +35,10 @@ class Server:
         self._client_address: (str, int) = None
         self.server_state: int = self.STATE.INIT
         self.live = True
+        if (host == "localhost"):
+            self.DEFAULT_HOST ="127.0.0.1"
+        else:
+            self.DEFAULT_HOST = "192.168.0.229"
 
         self.rtsp_port = rtsp_port
 

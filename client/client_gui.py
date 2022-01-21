@@ -1,3 +1,4 @@
+from turtle import rt
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout
 from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton
 from PyQt5.QtGui import QPixmap, QFont
@@ -6,6 +7,7 @@ from PIL.ImageQt import ImageQt
 
 from client.client import Client
 from utils.video_stream import VideoStream
+import time
 
 
 class ClientWindow(QMainWindow):
@@ -30,10 +32,14 @@ class ClientWindow(QMainWindow):
         self.video3_button = QPushButton()
         self.livestream_button = QPushButton()
         
+        
         self.select = QLabel()
         self.control = QLabel()
 
         self.error_label = QLabel()
+        self.host_address = host_address
+        self.host_port = host_port
+        self.rtp_port = rtp_port
 
         self._media_client = Client(file_name, host_address, host_port, rtp_port)
         self._update_image_signal.connect(self.update_image)
@@ -65,24 +71,22 @@ class ClientWindow(QMainWindow):
 
         self.video1_button.setEnabled(False)
         self.video1_button.setText('Video1')
-        self.video1_button.clicked.connect(self.handle_select("video1"))
+        self.video1_button.clicked.connect(self.handle_select1)
 
         self.video2_button.setEnabled(False)
         self.video2_button.setText('Video2')
-        self.video2_button.clicked.connect(self.handle_select("video2"))
+        self.video2_button.clicked.connect(self.handle_select2)
 
         self.video3_button.setEnabled(False)
         self.video3_button.setText('Video3')
-        self.video3_button.clicked.connect(self.handle_select("video3"))
+        self.video3_button.clicked.connect(self.handle_select3)
 
         self.livestream_button.setEnabled(False)
         self.livestream_button.setText('LiveStream')
-        self.livestream_button.clicked.connect(self.handle_select())        
+        self.livestream_button.clicked.connect(self.handle_select_live)       
 
 
-        self.error_label.setSizePolicy(
-            QSizePolicy.Preferred,
-            QSizePolicy.Maximum)
+        self.error_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
@@ -173,22 +177,93 @@ class ClientWindow(QMainWindow):
         self.livestream_button.setEnabled(False)
         exit(0)
     
-    def handle_select(self, video: str or None):
+    def handle_select1(self):
         #First, Teardown
         self._media_client.send_teardown_request()
+        self._media_client._rtp_socket.close()
+        time.sleep(5)
         #Then, new setup
+        print(self.host_address, self.host_port, self.rtp_port)
+        self._media_client = Client("chloe.mjpg", self.host_address, self.host_port, self.rtp_port)
         self._media_client.establish_rtsp_connection()
         self._media_client.send_setup_request()
         self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
         #New client? 
-        self._media_client = Client(video, self.host_address, self.host_port, self.rtp_port)
+        
         #UI Change
-        self.play_button.setEnabled(False)
+        self.play_button.setEnabled(True)
         self.pause_button.setEnabled(True)
         self.video1_button.setEnabled(False)
         self.video2_button.setEnabled(False)
         self.video3_button.setEnabled(False)
         self.livestream_button.setEnabled(False)
+    
+    def handle_select2(self):
+        # print("here")
+        #First, Teardown
+        self._media_client.send_teardown_request()
+        self._media_client._rtp_socket.close()
+        time.sleep(5)
+        #Then, new setup
+        print(self.host_address, self.host_port, self.rtp_port)
+        self._media_client = Client("jf2.mjpg", self.host_address, self.host_port, self.rtp_port)
+        self._media_client.establish_rtsp_connection()
+        self._media_client.send_setup_request()
+        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        #New client? 
+        
+        #UI Change
+        self.play_button.setEnabled(True)
+        self.pause_button.setEnabled(True)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
+    
+    def handle_select3(self):
+        # print("here")
+        #First, Teardown
+        self._media_client.send_teardown_request()
+        self._media_client._rtp_socket.close()
+        time.sleep(5)
+        #Then, new setup
+        print(self.host_address, self.host_port, self.rtp_port)
+        self._media_client = Client("4.mjpg", self.host_address, self.host_port, self.rtp_port)
+        self._media_client.establish_rtsp_connection()
+        self._media_client.send_setup_request()
+        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        #New client? 
+        
+        #UI Change
+        self.play_button.setEnabled(True)
+        self.pause_button.setEnabled(True)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
+    
+    def handle_select_live(self):
+        # print("here")
+        #First, Teardown
+        self._media_client.send_teardown_request()
+        self._media_client._rtp_socket.close()
+        time.sleep(5)
+        #Then, new setup
+        print(self.host_address, self.host_port, self.rtp_port)
+        self._media_client = Client("livestream", self.host_address, self.host_port, self.rtp_port)
+        self._media_client.establish_rtsp_connection()
+        self._media_client.send_setup_request()
+        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        #New client? 
+        
+        #UI Change
+        self.play_button.setEnabled(True)
+        self.pause_button.setEnabled(True)
+        self.video1_button.setEnabled(False)
+        self.video2_button.setEnabled(False)
+        self.video3_button.setEnabled(False)
+        self.livestream_button.setEnabled(False)
+    
     
 
 
