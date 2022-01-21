@@ -26,16 +26,6 @@ class server_func:
 
         self.rtsp_port = rtsp_port
 
-    def rtsp_packet(self):
-        recv = ''
-        while True:
-            try:
-                recv = self.rtsp_connection.recv(4096)
-                break
-            except socket.timeout:
-                continue
-        print(f"Received from client: {repr(recv)}")
-        return rtsp.from_request(recv)
 
     def setup(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,10 +45,10 @@ class server_func:
             if packet.request_type == rtsp.SETUP:
                 self.server_state = 1
                 print('State set to PAUSED')
-                self.client_address = self.client_address[0], packet.rtp_dst_port
-                self.stream = videostream(packet.video_file_path)
+                self.client_address = self.client_address[0], packet.rtp_destination_port
+                self.stream = videostream(packet.file_path)
                 self.rtp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                self.rtp_thread = Thread(target=self.video_send, daemon=True)
+                self.rtp_thread = Thread(target=self.send_video, daemon=True)
                 self.rtp_thread.start()
                 self.send_rtsp_response(packet.sequence_number)
                 break
@@ -88,8 +78,18 @@ class server_func:
                 raise ConnectionError('teardown requested')
             self.send_rtsp_response(packet.sequence_number)
 
+    def rtsp_packet(self):
+        recv = ''
+        while True:
+            try:
+                recv = self.rtsp_connection.recv(4096)
+                break
+            except socket.timeout:
+                continue
+        print(f"Received from client: {repr(recv)}")
+        return rtsp.receive(recv)
 
-    def video_send(self):
+    def send_video(self):
         print(
             f"sending video to {self.client_address[0]}:{self.client_address[1]}")
         while True:
