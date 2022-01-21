@@ -3,9 +3,8 @@ class InvalidPacketException(Exception):
 
 
 class RTPPacket:
-    # default header info
     HEADER_SIZE = 12   # bytes
-    VERSION = 0b10     # 2 bits -> current version 2
+    VERSION = 0b10     # version 2
     PADDING = 0b0      # 1 bit
     EXTENSION = 0b0    # 1 bit
     CC = 0x0           # 4 bits
@@ -17,10 +16,10 @@ class RTPPacket:
 
     def __init__(
             self,
-            payload_type: int = None,
-            sequence_number: int = None,
-            timestamp: int = None,
-            payload: bytes = None):
+            payload_type = None,
+            sequence_number = None,
+            timestamp = None,
+            payload = None):
 
         self.payload = payload
         self.payload_type = payload_type
@@ -54,7 +53,7 @@ class RTPPacket:
         ))
 
     @classmethod
-    def from_packet(cls, packet: bytes):
+    def from_packet(cls, packet):
         if len(packet) < cls.HEADER_SIZE:
             raise InvalidPacketException(
                 f"The packet {repr(packet)} is invalid")
@@ -80,12 +79,6 @@ class RTPPacket:
             payload
         )
 
-    def get_packet(self) -> bytes:
+    def get_packet(self):
         return bytes((*self.header, *self.payload))
 
-    def print_header(self):
-        # print header without SSRC
-        for i, by in enumerate(self.header[:8]):
-            s = ' '.join(f"{by:08b}")
-            # break line after the third and seventh bytes
-            print(s, end=' ' if i not in (3, 7) else '\n')

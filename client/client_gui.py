@@ -146,7 +146,7 @@ class ClientWindow(QMainWindow):
         self.video2_button.setEnabled(True)
         self.video3_button.setEnabled(True)
         self.livestream_button.setEnabled(True)
-        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        self._update_image_timer.start(1000//VideoStream.fps)
 
     def handle_play(self):
         self._media_client.send_play_request()
@@ -187,7 +187,7 @@ class ClientWindow(QMainWindow):
         self._media_client = Client("chloe.mjpg", self.host_address, self.host_port, self.rtp_port)
         self._media_client.establish_rtsp_connection()
         self._media_client.send_setup_request()
-        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        self._update_image_timer.start(1000//VideoStream.fps)
         #New client? 
         
         #UI Change
@@ -209,7 +209,7 @@ class ClientWindow(QMainWindow):
         self._media_client = Client("jf2.mjpg", self.host_address, self.host_port, self.rtp_port)
         self._media_client.establish_rtsp_connection()
         self._media_client.send_setup_request()
-        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        self._update_image_timer.start(1000//VideoStream.fps)
         #New client? 
         
         #UI Change
@@ -231,7 +231,7 @@ class ClientWindow(QMainWindow):
         self._media_client = Client("4.mjpg", self.host_address, self.host_port, self.rtp_port)
         self._media_client.establish_rtsp_connection()
         self._media_client.send_setup_request()
-        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        self._update_image_timer.start(1000//VideoStream.fps)
         #New client? 
         
         #UI Change
@@ -253,7 +253,7 @@ class ClientWindow(QMainWindow):
         self._media_client = Client("livestream", self.host_address, self.host_port, self.rtp_port)
         self._media_client.establish_rtsp_connection()
         self._media_client.send_setup_request()
-        self._update_image_timer.start(1000//VideoStream.DEFAULT_FPS)
+        self._update_image_timer.start(1000//VideoStream.fps)
         #New client? 
         
         #UI Change

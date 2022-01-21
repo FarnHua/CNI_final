@@ -1,17 +1,11 @@
 import cv2
 
 class VideoStream:
-    FRAME_HEADER_LENGTH = 5
     DEFAULT_IMAGE_SHAPE = (380, 280)
-    VIDEO_LENGTH = 500
-    # DEFAULT_FPS = 24
-    DEFAULT_FPS = 30
-    # if it's present at the end of chunk,
-    # it's the last chunk for current jpeg (end of frame)
-    JPEG_EOF = b'\xff\xd9'
+    video_len = 500
+    fps = 30
 
-    def __init__(self, file_path: str or None = None):
-        # for simplicity, mjpeg is assumed to be on working directory
+    def __init__(self, file_path):
         print(file_path)
         if (file_path != "livestream"):
             self._stream = open(file_path, 'rb')
@@ -20,8 +14,6 @@ class VideoStream:
             self._stream = cv2.VideoCapture(0)
             self.live = True
         print('set_up!')
-        # frame number is zero-indexed
-        # after first frame is sent, this is set to zero
         self.current_frame_number = -1
 
     def close(self):
@@ -30,11 +22,7 @@ class VideoStream:
         else:
             self._stream.close()
 
-    def get_next_frame(self) -> bytes:
-        # sample video file format is as follows:
-        # - 5 digit integer `frame_length` written as 5 bytes, one for each digit (ascii)
-        # - `frame_length` bytes follow, which represent the frame encoded as a JPEG
-        # - repeat until EOF
+    def get_next_frame(self):
         
         if (self.live):
             ret, frame = self._stream.read()
@@ -43,12 +31,9 @@ class VideoStream:
             self.current_frame_number += 1
             return bytes(jframe)
         else:
-            try:
-                frame_length = self._stream.read(self.FRAME_HEADER_LENGTH)
-                print('frame_length', frame_length)
-            except ValueError:
-                raise EOFError
-            frame_length = int(frame_length.decode())
+            length = self._stream.read(5)
+            print('frame_length', length)
+            frame_length = int(length.decode())
             frame = self._stream.read(frame_length)
             self.current_frame_number += 1
             return bytes(frame)
